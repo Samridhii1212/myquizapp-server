@@ -28,6 +28,7 @@ import com.quiz.dto.UserDTO;
 @RestController
 @RequestMapping("/quiz")
 @CrossOrigin(origins = "https://myquizapp-ndxh.vercel.app/")
+//@CrossOrigin(origins ="http://localhost:3000")
 public class QuizController {
 	
 	@Autowired QuizService quizservice;
