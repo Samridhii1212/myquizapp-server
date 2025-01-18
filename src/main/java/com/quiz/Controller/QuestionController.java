@@ -1,8 +1,10 @@
 package com.quiz.Controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,30 +22,31 @@ import com.quiz.Service.QuestionService;
 @RestController
 @RequestMapping("/question")
 @CrossOrigin(origins = "http://localhost:3000")
-public class QuestionController {
+public class QuestionController 
+{
 	
-	@Autowired QuestionService quizservice;
+	@Autowired QuestionService questionservice;
 	
 	
-	@GetMapping("/getallquestion")
+	//@GetMapping("/getallquestion")
 //	public List<Question> getallquestion()
 //	{
 //		return quizservice.getAllQuestion();
 //	}
 	
 	
-	//sending data+status code
+	
 	
 	public ResponseEntity<List<Question>> getallquestion()
 	{
-		return quizservice.getAllQuestion();
+		return questionservice.getAllQuestion();
 		
 	}
 	
 	
 	
 	
-	@GetMapping("/getquestionbycategory/{cat}")
+//	@GetMapping("/getquestionbycategory/{cat}")
 //	public List<Question> getbyCategory(@PathVariable("cat") String category)
 //	{
 //		return quizservice.getQuestionBycategory(category);
@@ -52,20 +55,31 @@ public class QuestionController {
 	
 	public ResponseEntity<List<Question>> getbyCategory(@PathVariable("cat") String category)
 	{
-		return quizservice.getQuestionBycategory(category);
+		return questionservice.getQuestionBycategory(category);
 	}
 	
 	
-	
-	
+
 	
 	@PostMapping("/add")
-	public ResponseEntity<String> addquestion(@RequestBody Question question)
+	public ResponseEntity<String> addMultipleQuestions(@RequestBody Map<String, Object> requestData) 
 	{
-		;System.out.println("question came");
-		return quizservice.addquestion(question);
+		System.out.println(1);
 		
-		
+	    String category = (String) requestData.get("category");
+	    
+	    
+	    @SuppressWarnings("unchecked")
+		List<Map<String, Object>> questionsData = (List<Map<String, Object>>) requestData.get("questions");
+
+	    try {
+	    	System.out.println(questionsData);
+	        questionservice.addMultipleQuestions(category, questionsData);
+	        return new ResponseEntity<>("Questions added successfully to category: " + category, HttpStatus.CREATED);
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return new ResponseEntity<>("Failed to add questions.", HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
 	
 	

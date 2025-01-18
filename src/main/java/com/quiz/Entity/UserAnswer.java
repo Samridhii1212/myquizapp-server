@@ -7,22 +7,22 @@ public class UserAnswer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;  // Primary key for the table
+    private Long id;  
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;  // Many answers belong to one user
+    private User user;  
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
-    private Question question;  // Many answers belong to one question
+    private Question question;  
 
-    private int answerGiven;  // The answer given by the user
+    private int answerGiven; 
 
-    // Default constructor
+    
     public UserAnswer() {}
 
-    // Getters and Setters
+    
     public Long getId() {
         return id;
     }

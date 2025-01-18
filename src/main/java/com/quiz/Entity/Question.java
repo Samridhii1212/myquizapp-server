@@ -14,7 +14,7 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     
     @Column(name = "question_id")
-    private Long questionId; // Primary key for the table
+    private Long questionId; 
     private String category;
     private String difficultyLevel;
     private String option1;
@@ -22,13 +22,13 @@ public class Question {
     private String option3;
     private String option4;
     private String questionTitle;
-    private int answer; // Changed to int
-    private int rightAnswer; // Changed to int
+    private int answer; 
+    private int rightAnswer; 
 
-    // Default constructor
+   
     public Question() {}
 
-    // Getters and Setters
+   
     public Long getQuestionId() {
         return questionId;
     }

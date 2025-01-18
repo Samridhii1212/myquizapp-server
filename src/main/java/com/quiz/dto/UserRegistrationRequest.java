@@ -6,7 +6,7 @@ public class UserRegistrationRequest {
     private String password;
     private String role;
 
-    // Getters and Setters
+    
     public String getUsername() {
         return username;
     }

@@ -4,17 +4,17 @@ public class Response {
     private Integer questionid;
     private Integer answergiven;
 
-    // Default constructor
+    
     public Response() {
     }
 
-    // Parameterized constructor
+    
     public Response(Integer questionid, Integer answergiven) {
         this.questionid = questionid;
         this.answergiven = answergiven;
     }
 
-    // Getters and Setters
+   
     public Integer getQuestionid() {
         return questionid;
     }

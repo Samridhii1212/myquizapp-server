@@ -19,17 +19,17 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role; // "USER" or "ADMIN"
+    private String role; 
 
     @Column(unique = true, nullable = false)
-    private String username; // Added username field
+    private String username; 
     
     private String sessionId; 
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserQuizScore> userQuizScores;
 
-    // Getter and Setter for id
+    
     public Long getId() {
         return id;
     }
@@ -47,7 +47,7 @@ public class User {
         this.email = email;
     }
 
-    // Getter and Setter for password
+    
     public String getPassword() {
         return password;
     }
@@ -56,7 +56,7 @@ public class User {
         this.password = password;
     }
 
-    // Getter and Setter for role
+    
     public String getRole() {
         return role;
     }
@@ -65,7 +65,7 @@ public class User {
         this.role = role;
     }
 
-    // Getter and Setter for username
+    
     public String getUsername() {
         return username;
     }

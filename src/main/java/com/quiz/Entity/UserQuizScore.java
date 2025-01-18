@@ -23,7 +23,6 @@ public class UserQuizScore {
 
     private int score;
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

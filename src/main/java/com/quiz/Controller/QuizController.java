@@ -1,5 +1,6 @@
 package com.quiz.Controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,39 +41,26 @@ public class QuizController {
 	}
 	
 	@GetMapping("/get/{id}")
-	public ResponseEntity<List<QuestionWrapper>> get(@PathVariable Integer id)
+	public ResponseEntity<Map<String, Object>> get(@PathVariable Integer id,@RequestParam String username)
 	{
-		return quizservice.getquiz(id);
+		return quizservice.getquiz(id,username);
 		
 	}
 	
 	@GetMapping("/getall")
 	public ResponseEntity<List<Map<String, Object>>> get(@RequestParam String username)
 	{
-		//System.out.println("getall");
-		
-		return quizservice.getallquiz(username);
-		
+	return quizservice.getallquiz(username);
 	}
-	//user submitting a particular quiz
 	
 	
-//	@GetMapping("/submit/{id}")
-//	public int submitquiz()
-//	{
-//		System.out.println("req came");
-//		//responses will comes
-//		//each response will have quizid and givenanswer
-//		return 1;
-//		
-	//}
+	
 	@PostMapping("/submit/{id}")
 	public ResponseEntity<Integer> submitquiz(@PathVariable("id") Integer quiz_id,@RequestBody List<Response> responses,
 			                                 @RequestParam("username") String username)
 	{
-		System.out.println("req came");
-		//responses will comes
-		//each response will have quizid and givenanswer
+		
+		
 		if (responses == null || responses.isEmpty()) {
 	        return new ResponseEntity<>(0, HttpStatus.BAD_REQUEST);
 	    }
@@ -85,6 +73,14 @@ public class QuizController {
 	{
         return quizservice.getTop10LeaderboardByQuizId(quizId);
     }
+	
+	
+	@GetMapping("/check")
+	public ResponseEntity<Boolean> checkIfQuizExists(@RequestParam String category) {
+	    return quizservice.checkcategory(category);
+	 
+	}
+
 	
 	
 	

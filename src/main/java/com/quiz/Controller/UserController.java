@@ -36,40 +36,37 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-  
-
-    // Register a new user
+ 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody UserRegistrationRequest request) {
-    	System.out.println("reg");
-    	System.out.println(request.getUsername());
+    	
         if (!userRepository.findByUsername(request.getUsername()).isEmpty()) {
-        	System.out.println(1);
+        	
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Username already exists"));
         }
 
         if (!userRepository.findByEmail(request.getEmail()).isEmpty()) {
-        	System.out.println(2);
+        	
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Email already exists"));
         }
 
         User user = userService.registerUser(request.getUsername(), request.getEmail(), request.getPassword(), request.getRole());
         if (user != null) {
-            // Generate session token
+           
             String sessionId = UUID.randomUUID().toString();
 
-            // Save session token to user
+            
             userService.saveSessionToken(user.getEmail(), sessionId);
 
-            // Create a response map with sessionId and username
+            
             Map<String, String> response = new HashMap<>();
             response.put("sessionId", sessionId);
             response.put("username", user.getUsername());
             response.put("role", user.getRole());
 
-            // Return response with sessionId and username
+            
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Error during registration."));
@@ -79,30 +76,27 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> loginUser(@RequestBody loginRequest request) {
-    	System.out.println(1);
+    	
         Optional<User> user = userService.authenticateUser(request.getEmail(), request.getPassword());
-        System.out.println(request.getEmail());
-        System.out.println(request.getPassword());
         
         if (user.isPresent()) {
-            // Generate session token
-        	System.out.println(3);
+            
             String sessionId = UUID.randomUUID().toString();
 
-            // Save session token to user
+            
             userService.saveSessionToken(user.get().getEmail(), sessionId);
 
-            // Create a response map with sessionId and username
+            
             Map<String, String> response = new HashMap<>();
             response.put("sessionId", sessionId);
             response.put("username", user.get().getUsername());
             response.put("role", user.get().getRole());
            
 
-            // Return response with sessionId and username
+            
             return ResponseEntity.ok(response);
         }
-        System.out.println(8);
+        
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid email or password."));
     }
     

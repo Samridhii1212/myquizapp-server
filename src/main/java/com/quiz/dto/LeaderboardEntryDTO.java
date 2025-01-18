@@ -15,7 +15,7 @@ public class LeaderboardEntryDTO
         this.quizname=quizname;
     }
 
-    // Getters and Setters
+    
     public String getUsername() {
         return username;
     }

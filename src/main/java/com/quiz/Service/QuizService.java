@@ -17,8 +17,10 @@ import com.quiz.Entity.Question;
 import com.quiz.Entity.Quiz;
 import com.quiz.Entity.Response;
 import com.quiz.Entity.User;
+import com.quiz.Entity.UserAnswer;
 import com.quiz.Entity.UserQuizScore;
 import com.quiz.Repository.UserRepository;
+import com.quiz.Repository.userAnswerRepository;
 import com.quiz.Repository.userQuizScoreRepository;
 import com.quiz.dao.QuestionDao;
 import com.quiz.dao.QuestionWrapper;
@@ -26,7 +28,7 @@ import com.quiz.dao.QuizDao;
 import com.quiz.dto.LeaderboardEntryDTO;
 import com.quiz.dto.UserDTO;
 
-//#AC6984
+
 @Service
 public class QuizService {
 	
@@ -44,81 +46,103 @@ public class QuizService {
 	@Autowired
 	private  userQuizScoreRepository  userQuizScoreRepository;
 	
+	@Autowired
+	private  userAnswerRepository  userAnsRepo;
+	
 	
 	public ResponseEntity<String> createQuiz(String category, int numq, String title) {
-	    // Fetch all quizzes with the same title
+	   
 	    List<Quiz> existingQuizzes = quizdao.findByTitle(category);
 
 	    if (!existingQuizzes.isEmpty()) {
-	        // Use the first quiz from the list
+	        
 	        Quiz existingQuiz = existingQuizzes.get(0);
-
-	        // Fetch random questions by category
 	        List<Question> newQuestions = questiondao.findRandomQuestionByCategory(category, numq);
 
-	        // Check for duplicate questions and avoid adding them twice
+	       
 	        for (Question question : newQuestions) {
 	            if (!existingQuiz.getQuestions().contains(question)) {
 	                existingQuiz.getQuestions().add(question);
 	            }
 	        }
 
-	        // Save the updated quiz
+	       
 	        quizdao.save(existingQuiz);
-	        return new ResponseEntity<>("Questions added to the existing quiz with title: " + title, HttpStatus.OK);
+	        return new ResponseEntity<>("Questions added to the existing quiz: " + title, HttpStatus.OK);
 	    } else {
-	        // If no quiz exists, create a new quiz
+	       
 	        List<Question> questions = questiondao.findRandomQuestionByCategory(category, numq);
 
 	        Quiz newQuiz = new Quiz();
 	        newQuiz.setTitle(category);
 	        newQuiz.setQuestions(questions);
-
 	        quizdao.save(newQuiz);
 	        return new ResponseEntity<>("New quiz created for category: " + category, HttpStatus.OK);
 	    }
 	}
 
+	
+	public ResponseEntity<Map<String, Object>> getquiz(Integer id, String username) {
+	    try {
+	        
+	        Optional<Quiz> quizOptional = quizdao.findById(id);
+	        if (quizOptional.isEmpty()) {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
 
-	public ResponseEntity<List<QuestionWrapper>> getquiz(Integer id) {
+	        Quiz quiz = quizOptional.get();
+	        Long userId = userRepo.findByUsername(username).get().getId();
 
-		
-		//fetch that particular quiz
-		try
-		{
-		Optional<Quiz> quiz=quizdao.findById(id);
-		
-		//fetch questions of that particular quiz
-		List<Question> questions=quiz.get().getQuestions();
-		
-		List<QuestionWrapper> getquestionforuser=new ArrayList<>();
-		
-		for(Question q:questions)
-		{
-			QuestionWrapper qw=new QuestionWrapper(q.getQuestionId(),q.getOption1(),
-					         q.getOption2(),q.getOption3(),q.getOption4(),q.getQuestionTitle(),q.getCategory());
-			
-			
-			getquestionforuser.add(qw);
-			
-		}
-		return new ResponseEntity<>(getquestionforuser,HttpStatus.OK);
-		
-		}
-		catch(Exception e)
-		{
-			return new ResponseEntity<>(new ArrayList<>(),HttpStatus.BAD_REQUEST);
-		}
-		
-		
-		
+	        UserQuizScore userQuizScore = userQuizScoreRepository.findByUserIdandQuizId(userId, id);
+	        boolean alreadyAttempted = userQuizScore != null;
+            
+	        List<Question> questions = quiz.getQuestions();
+	        List<QuestionWrapper> questionWrappers = new ArrayList<>();
+
+	        for (Question q : questions) {
+	            QuestionWrapper qw = new QuestionWrapper(
+	                q.getQuestionId(),
+	                q.getOption1(),
+	                q.getOption2(),
+	                q.getOption3(),
+	                q.getOption4(),
+	                q.getQuestionTitle(),
+	                q.getCategory()
+	               
+	            );
+	            if (alreadyAttempted) 
+	            {
+	                Optional<UserAnswer> userAnswerOpt = userAnsRepo.findByUserIdAndQuestionId(userId, q.getQuestionId());
+	                userAnswerOpt.ifPresent(userAnswer -> 
+	                {
+	                	qw.setSelectedOption(userAnswer.getAnswerGiven());
+	                	qw.setCorrectAns(q.getRightAnswer());
+	                }
+	                	
+	                );
+	           }
+
+	            questionWrappers.add(qw);
+	        }
+
+	        
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("questions", questionWrappers);
+	        response.put("alreadyAttempted", alreadyAttempted);
+
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
+
 
 	public ResponseEntity<Integer> getquizscore(Integer quiz_id, List<Response> responses, String username) {
 	    System.out.println("Submitting quiz score for user: " + username);
 
 	    try {
-	        // Fetch the quiz from the database
 	        Optional<Quiz> quizOptional = quizdao.findById(quiz_id);
 	        if (quizOptional.isEmpty()) {
 	            return new ResponseEntity<>(0, HttpStatus.BAD_REQUEST); // Quiz not found
@@ -126,42 +150,55 @@ public class QuizService {
 
 	        Quiz quiz = quizOptional.get();
 	        List<Question> questions = quiz.getQuestions();
-	        int ans = 0, i = 0;
 
-	        // Calculate score
-	        for (Response r : responses) {
-	            Integer givenAnswer = r.getAnswergiven();
-	            if (givenAnswer.equals(questions.get(i).getRightAnswer())) {
-	                ans++;
-	            }
-	            i++;
-	        }
-
-	        // Find the user by username
+	        
 	        Optional<User> userOptional = userRepo.findByUsername(username);
 	        if (userOptional.isEmpty()) {
 	            return new ResponseEntity<>(0, HttpStatus.BAD_REQUEST); // User not found
 	        }
 
 	        User user = userOptional.get();
+
 	        
-	        UserQuizScore existinguser= userQuizScoreRepository.findByUserIdandQuizId(user.getId(),quiz_id);
-	        
-	        if (!(existinguser==null)) {
-	            // If the score exists, update the score
-	            //UserQuizScore userquizscore=existinguser;
-	            existinguser.setScore(ans);  // Set the new score
-	            userQuizScoreRepository.save(existinguser);  // Save the updated score
-	        } else {
-	            // If no score exists, create a new score entry
-	            UserQuizScore newUserQuizScore = new UserQuizScore();
-	            newUserQuizScore.setUser(user);
-	            newUserQuizScore.setQuiz(quiz);
-	            newUserQuizScore.setScore(ans);
-	            userQuizScoreRepository.save(newUserQuizScore);  // Save the new score
+	        UserQuizScore existingScore = userQuizScoreRepository.findByUserIdandQuizId(user.getId(), quiz_id);
+
+	        if (existingScore != null) {
+	          
+	            return new ResponseEntity<>(existingScore.getScore(), HttpStatus.OK);
 	        }
+
 	        
-	        return new ResponseEntity<>(ans, HttpStatus.OK);
+	        int score = 0;
+	        for (Response response : responses) {
+	            Integer givenAnswer = response.getAnswergiven();
+	            Integer questionId = response.getQuestionid();
+
+	           
+	            Optional<Question> questionOptional = questiondao.findById(questionId);
+	            if (questionOptional.isEmpty()) {
+	                continue; 
+	            }
+	            Question question = questionOptional.get();
+
+	           
+	            if (givenAnswer.equals(question.getRightAnswer())) {
+	                score++;
+	            }
+
+	            
+	            UserAnswer userAnswer = new UserAnswer();
+	            userAnswer.setUser(user);
+	            userAnswer.setQuestion(question); 
+	            userAnswer.setAnswerGiven(givenAnswer);
+	            userAnsRepo.save(userAnswer); 
+	        }
+	        UserQuizScore newUserQuizScore = new UserQuizScore();
+	        newUserQuizScore.setUser(user);
+	        newUserQuizScore.setQuiz(quiz);
+	        newUserQuizScore.setScore(score);
+	        userQuizScoreRepository.save(newUserQuizScore);
+
+	        return new ResponseEntity<>(score, HttpStatus.OK);
 
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -169,11 +206,10 @@ public class QuizService {
 	    }
 	}
 
-	
 	public ResponseEntity<List<Map<String, Object>>> getallquiz(String username)
 	{
 	    try {
-	        // Fetch all quizzes
+	        
 	        List<Quiz> quizzes = quizdao.findAll();
 	        
 	        Optional<User> useropt=userRepo.findByUsername(username);
@@ -183,14 +219,11 @@ public class QuizService {
 	        
 	        System.out.println(useropt.get().getUsername());
 	        
-	        
-
-	        // Prepare response with quiz details and questions in `QuestionWrapper` format
 	        List<Map<String, Object>> response = quizzes.stream().
 	        	map(quiz -> 
 	        	{
 	            Map<String, Object> quizDetails = new HashMap<>();
-	            //System.out.println(2);
+	            
 	            
 	            quizDetails.put("quizTitle", quiz.getTitle());
 
@@ -218,15 +251,9 @@ public class QuizService {
 	                {
 	                	quizDetails.put("score",0);
 	                }
-	            
-	            
 	            quizDetails.put("questions", questionWrappers);
 	            quizDetails.put("quizid",quiz.getQuizId());
-	            //quizDetails.put("score",temp.getScore());
-	           //System.out.println(3);
-	            
-	            
-	           return quizDetails;
+	            return quizDetails;
 	        }).collect(Collectors.toList());
 	        System.out.println(3);
 	        return new ResponseEntity<>(response, HttpStatus.OK);
@@ -239,9 +266,9 @@ public class QuizService {
 	{
         List<UserQuizScore> scores = userQuizScoreRepository.findTop10ByQuizIdOrderByScoreDesc(quizId);
 
-        // Map entities to DTOs
+        
         return scores.stream()
-                     .limit(10) // Ensure top 10
+                     .limit(10) 
                      .map(uqs -> new LeaderboardEntryDTO(
                              uqs.getUser().getUsername(),
                              uqs.getUser().getEmail(),
@@ -250,6 +277,21 @@ public class QuizService {
                      ))
                      .toList();
     }
+
+
+	public ResponseEntity<Boolean> checkcategory(String category) {
+		List<Quiz> checkquiz=quizdao.findByTitle(category);
+		boolean exist;
+		
+		    if(checkquiz.size()==0)
+			{
+			exist=false;
+			}
+		
+		    else exist=true;
+		    System.out.println(exist);
+		return new ResponseEntity<>(exist,HttpStatus.OK);
+	}
 	
 	 
 

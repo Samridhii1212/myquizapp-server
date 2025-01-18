@@ -8,11 +8,14 @@ public class QuestionWrapper
 	    private String option2;
 	    private String option3;
 	    private String option4;
+	    
 	    private String questionTitle;
 	    private String Category;
+	    private int selectedOption; 
+	    private int correctans;
 	    
 
-	    // Default constructor
+	   
 	    public QuestionWrapper() 
 	    {
 	    	
@@ -28,6 +31,8 @@ public class QuestionWrapper
 	        this.option4 = option4;
 	        this.questionTitle = questionTitle;
 	        this.Category=category;
+	        this.selectedOption = -1; 
+	        this.correctans=-1;
 	        
 	    }
 
@@ -85,6 +90,23 @@ public class QuestionWrapper
 
 	    public void setCategory(String category) {
 	        this.Category = category;
+	    }
+	    
+	    
+	    public int getSelectedOption() {
+	        return selectedOption;
+	    }
+
+	    public void setSelectedOption(int selectedOption) {
+	        this.selectedOption = selectedOption;
+	    }
+	    
+	    public int getCorrectAns() {
+	        return correctans;
+	    }
+
+	    public void setCorrectAns(int ans) {
+	        this.correctans= ans;
 	    }
 
 	   

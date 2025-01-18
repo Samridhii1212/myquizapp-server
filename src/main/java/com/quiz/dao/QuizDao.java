@@ -14,10 +14,6 @@ import com.quiz.Entity.Quiz;
 @Repository
 public interface QuizDao extends JpaRepository<Quiz,Integer> 
 {
-
 	List<Quiz> findByTitle(String title);
-
-   
-	
 
 }
