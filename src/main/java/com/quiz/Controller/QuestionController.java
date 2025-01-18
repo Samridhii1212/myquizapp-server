@@ -21,7 +21,7 @@ import com.quiz.Service.QuestionService;
 
 @RestController
 @RequestMapping("/question")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://myquizapp-ndxh.vercel.app/")
 public class QuestionController 
 {
 	

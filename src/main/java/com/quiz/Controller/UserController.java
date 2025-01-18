@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,7 @@ import com.quiz.dto.loginRequest;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "https://myquizapp-ndxh.vercel.app/")
 public class UserController {
 
     @Autowired
