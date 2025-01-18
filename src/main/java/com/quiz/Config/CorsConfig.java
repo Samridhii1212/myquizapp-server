@@ -18,7 +18,8 @@ public class CorsConfig {
                         		"https://quizcamp-6awv9vfyt-samridhi-srivastavs-projects.vercel.app/",
                         		"https://quizcamp.vercel.app/","https://myquizapp-olive.vercel.app/",
                         		"https://myquizapp-git-master-samridhi-srivastavs-projects.vercel.app/",
-                        		"https://myquizapp-7zrg.vercel.app/") 
+                        		"https://myquizapp-7zrg.vercel.app/",
+                        		"https://myquizapp-k2tx.vercel.app/") 
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") 
                         .allowedHeaders("*") 
                         .allowCredentials(true); 
